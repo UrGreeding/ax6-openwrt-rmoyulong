@@ -21,7 +21,7 @@ on:
       OP_IP:
         description: 'IP选项'     
         required: true
-        default: '192.168.31.1'
+        default: '10.10.10.1'
         type: string
         
       OP_router:
@@ -102,3 +102,4 @@ jobs:
       CORE_feeds_conf: false
       CORE_META: openclash
       OP_router: ${{ github.event.inputs.OP_router }}
+
