@@ -99,7 +99,8 @@ jobs:
       #特殊固件的方式 使用默认的：false
       CORE_Pack: false
       #feeds.conf.default  -- patch 目录 使用默认的：false
-      CORE_feeds_conf: false
+      CORE_feeds_conf: feeds.conf.default
       CORE_META: openclash
       OP_router: ${{ github.event.inputs.OP_router }}
+
 
