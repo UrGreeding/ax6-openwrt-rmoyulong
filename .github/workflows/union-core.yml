@@ -391,6 +391,11 @@ jobs:
         working-directory: ./openwrt
         run: |
           make defconfig
+          
+          # 核心修复：自动回答所有新出现的内核配置问题，防止卡死报错
+          # 它会根据内核建议的默认值自动补全 .config
+          yes "" | make oldconfig
+          
           make download -j$(nproc)
           #make download -j8
           #make -j16 download
@@ -508,3 +513,4 @@ jobs:
         with:
           retain_days: 0
           keep_minimum_runs: 1
+
