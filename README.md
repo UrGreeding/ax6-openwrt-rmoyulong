@@ -4,5 +4,3 @@
 openwrt传统版本，有满血NSS<br>
 
 immortalwrt版本有满血NSS<br>
-
-lede传统版本，没有NSS<br>
