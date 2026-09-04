@@ -15,8 +15,10 @@ env:
   CORE_TARGET: Redmi-AX6
   CORE_NAME: Redmi-AX6
   CORE_THEME: material
-  CORE_URL: https://github.com/VIKINGYFY/immortalwrt
-  CORE_BRANCH: main
+  #CORE_URL: https://github.com/VIKINGYFY/immortalwrt
+  CORE_URL: https://github.com/LiBwrt/openwrt-6.x
+  #源码版本
+  CORE_BRANCH: 25.12-nss
   CORE_IP: 192.168.31.1
   CORE_PW: password
   ################################
@@ -24,9 +26,9 @@ env:
   CORE_patch: false
   ################################
   #后置补丁 没有执行cd openwrt  在【更新订阅源】后执行
-  CORE_patch_after: patch/python.patch.sh
+  CORE_patch_after: patch/false
   # 通用脚本 -- Scripts  目录 不执行: false 已经执行cd openwrt
-  CORE_DIY_P1_SH: Scripts/immortalwrt.sh
+  CORE_DIY_P1_SH: Scripts/false
   CORE_DIY_P2_SH: Scripts/Settings.sh
   #####################################
   #固件初始设置files 远程公用files文件夹下载 不适用设置为: false
@@ -35,7 +37,7 @@ env:
   #openclash    有false则不执行
   CORE_DIY_P4_SH: Scripts/false
   # 删除不兼容的插件 -- remove 目录 不执行: false 已经执行cd openwrt
-  CORE_remove: remove/remove.sh
+  CORE_remove: Scripts/setup.sh
   CORE_LINUX: 6.6.30
   # 固件初始设置 -- patch 目录 目录不存在就不执行
   CORE_FILES: patch/ax6/files
@@ -103,7 +105,7 @@ jobs:
         run: |
           echo "警告⚠"
           echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
-          echo -e "已知CPU型号（降序）：7763，8370C，8272CL，8171M，E5-2673 \n"
+          echo -e "已知CPU型号（降序）： 9V74 7763，8370C，8272CL，8171M，E5-2673 \n"
           echo "--------------------------CPU信息--------------------------"
           echo "CPU物理数量：$(cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l)"
           echo -e "CPU核心信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
@@ -119,7 +121,13 @@ jobs:
         run: |
           sudo -E apt-get -qq update --fix-missing
           sudo -E apt-get -qq full-upgrade
-          sudo -E apt-get -y install $(cat $GITHUB_WORKSPACE/Ubuntu-2204.txt)
+          
+          if [[ "${{ env.CORE_BRANCH }}" == *"openwrt-24.10"* ]]; then
+            sudo -E apt-get -qq install -y $(curl -fsSL https://raw.githubusercontent.com/rmoyulong/AX6-Actions_Lede/master/Ubuntu-2410.txt)
+           else
+            sudo -E apt-get -y install $(cat $GITHUB_WORKSPACE/Ubuntu-2204.txt)           
+          fi
+          
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
           sudo -E systemctl daemon-reload
@@ -127,7 +135,7 @@ jobs:
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
           echo "status=success" >> ${GITHUB_OUTPUT}
-          df -Th              
+          df -Th               
 
       - name: 初始化变量
         run: |
@@ -241,13 +249,6 @@ jobs:
             cp -rf $GITHUB_WORKSPACE/${{ env.CORE_feeds_conf }} ./feeds.conf.default
           fi
           
-          if [[ "${{ env.CORE_DIY_P1_SH }}" == *"false"* ]]; then
-            echo "不需要执行 CORE_DIY_P1_SH"
-          else
-            ${GITHUB_WORKSPACE}/${CORE_DIY_P1_SH}
-          fi          
-          echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          
       - name: 前置补丁
         run: |
           if [[ "${{ env.CORE_patch }}" == *"false"* ]]; then
@@ -267,8 +268,12 @@ jobs:
         run: |
           cd openwrt
           
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          if [[ "${{ env.CORE_DIY_P1_SH }}" == *"false"* ]]; then
+            echo "不需要执行 CORE_DIY_P1_SH"
+          else
+            ${GITHUB_WORKSPACE}/${CORE_DIY_P1_SH}
+          fi          
+          echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
           
       - name: 后置补丁
         run: |
@@ -345,17 +350,14 @@ jobs:
         working-directory: ./openwrt
         run: |
           make defconfig
-          make download -j$(nproc)
-          #make download -j8
-          #make -j16 download
-          find dl -size -1024c -exec ls -l {} \;
-          find dl -size -1024c -exec rm -f {} \;
+          make download -j$(( $(nproc) * 2 ))
+          find dl -size -1k -exec rm -f {} \;
 
       - name: 编译固件
         working-directory: ./openwrt
         run: |     
           echo -e "$(nproc) thread compile"
-          make -j$(nproc) || make -j1 || make -j1 V=s
+          make -j$(( $(nproc) + 1 )) || make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV 
 

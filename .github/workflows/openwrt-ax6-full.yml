@@ -56,9 +56,9 @@ jobs:
       #默认地址
       CORE_IP: ${{ github.event.inputs.OP_IP }}
       #默认源码
-      CORE_URL: https://github.com/openwrt/openwrt
+      CORE_URL: https://github.com/qosmio/openwrt-ipq
       #源码版本
-      CORE_BRANCH: openwrt-24.10
+      CORE_BRANCH: main-nss
       CORE_tag_name: 增强版
       # 头部 配置文件 --- header 目录
       CORE_header: qualcommax_ipq807x_DEVICE_redmi_ax6-stock-openwrt.config
@@ -73,7 +73,7 @@ jobs:
       CORE_SOC_P1_SH: false
       CORE_SOC_P2_SH: false
       # 通用脚本 -- Scripts  目录 不执行: false 已经执行cd openwrt
-      CORE_DIY_P1_SH: openwrt.sh
+      CORE_DIY_P1_SH: false
       CORE_DIY_P2_SH: Settings.sh
       #####################################
       #固件初始设置files soc 远程公用files文件夹下载 不适用设置为: false
@@ -82,7 +82,7 @@ jobs:
       #openclash
       CORE_DIY_P4_SH: openclash64.sh
       # 删除不兼容的插件 -- remove 目录 不执行: false 已经执行cd openwrt
-      CORE_remove: openwrt_remove.sh
+      CORE_remove: Scripts/setup.sh
       # 修正files配置文件脚本 -- remove  目录 不执行: false 已经执行cd openwrt
       CORE_Files_SH: edit_files.sh
       # linux 内核

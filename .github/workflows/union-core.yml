@@ -115,7 +115,7 @@ env:
   CORE_DIY_P2_SH: Scripts/${{inputs.CORE_DIY_P2_SH}}
   CORE_DIY_P3_SH: Scripts/${{inputs.CORE_DIY_P3_SH}}
   CORE_DIY_P4_SH: Scripts/${{inputs.CORE_DIY_P4_SH}}
-  CORE_remove: remove/${{inputs.CORE_remove}}
+  CORE_remove: ${{inputs.CORE_remove}}
   CORE_LINUX: ${{inputs.CORE_LINUX}}
   CORE_FILES: patch/${{inputs.CORE_FILES}}
   kernel_repo: ${{inputs.kernel_repo}}
@@ -169,7 +169,7 @@ jobs:
         run: |
           echo "警告⚠"
           echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
-          echo -e "已知CPU型号（降序）：7763，8370C，8272CL，8171M，E5-2673 \n"
+          echo -e "已知CPU型号（降序）： 9V74 7763，8370C，8272CL，8171M，E5-2673 \n"
           echo "--------------------------CPU信息--------------------------"
           echo "CPU物理数量：$(cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l)"
           echo -e "CPU核心信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
@@ -287,13 +287,6 @@ jobs:
             cp -rf $GITHUB_WORKSPACE/${{ env.CORE_feeds_conf }} ./feeds.conf.default
           fi
           
-          if [[ "${{ inputs.CORE_DIY_P1_SH }}" == *"false"* ]]; then
-            echo "不需要执行 CORE_DIY_P1_SH"
-          else
-            ${GITHUB_WORKSPACE}/${CORE_DIY_P1_SH}
-          fi          
-          echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          
       - name: 前置补丁
         run: |
           if [[ "${{ inputs.CORE_patch }}" == *"false"* ]]; then
@@ -313,8 +306,12 @@ jobs:
         run: |
           cd openwrt
           
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          if [[ "${{ inputs.CORE_DIY_P1_SH }}" == *"false"* ]]; then
+            echo "不需要执行 CORE_DIY_P1_SH"
+          else
+            ${GITHUB_WORKSPACE}/${CORE_DIY_P1_SH}
+          fi          
+          echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
           
       - name: 后置补丁
         run: |
@@ -391,17 +388,14 @@ jobs:
         working-directory: ./openwrt
         run: |
           make defconfig
-          make download -j$(nproc)
-          #make download -j8
-          #make -j16 download
-          find dl -size -1024c -exec ls -l {} \;
-          find dl -size -1024c -exec rm -f {} \;
+          make download -j$(( $(nproc) * 2 ))
+          find dl -size -1k -exec rm -f {} \;
 
       - name: 编译固件
         working-directory: ./openwrt
         run: |     
           echo -e "$(nproc) thread compile"
-          make -j$(nproc) || make -j1 || make -j1 V=s
+          make -j$(( $(nproc) + 1 )) || make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
           echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV 
  
