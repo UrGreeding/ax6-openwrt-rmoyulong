@@ -3,21 +3,9 @@
 #========================================================================================================================
 #CI项目名
 name: AX6-LEO-immortalwrt
-
 on:
-  #对应的是 UTC 时间，需要转换，0 代表北京时间8点，每个月1日/15日12点编译一次
-  #关闭则手动编译
   workflow_dispatch:
     inputs:
-      theme:
-        description: '主题'     
-        required: true
-        default: 'material' 
-        type: choice
-        options:
-        - material
-        - argon
-
       OP_IP:
         description: 'IP选项'     
         required: true
@@ -35,10 +23,8 @@ on:
         
   schedule:
     - cron: 0 4 1,15 * *
-
 #CI权限
 permissions: write-all
-
 #CI任务
 jobs:
   core_config:
@@ -47,8 +33,8 @@ jobs:
     with:
       #编译平台，X64包含X86
       CORE_TARGET: Redmi-AX6
-      #默认主题
-      CORE_THEME: ${{ github.event.inputs.theme }}
+      #固定主题material，不再可选择
+      CORE_THEME: material
       #默认主机名
       CORE_NAME: Redmi-AX6
       #默认密码，仅作展示，更改无效
