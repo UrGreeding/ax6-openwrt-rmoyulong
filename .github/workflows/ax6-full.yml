@@ -48,13 +48,13 @@ jobs:
       #编译平台，X64包含X86
       CORE_TARGET: Redmi-AX6
       #默认主题
-      CORE_THEME: ${{ github.event.inputs.theme }}
+      CORE_THEME: ${{ github.event.inputs.theme || 'material'}}
       #默认主机名
       CORE_NAME: Redmi-AX6
       #默认密码，仅作展示，更改无效
       CORE_PW: password
       #默认地址
-      CORE_IP: ${{ github.event.inputs.OP_IP }}
+      CORE_IP: ${{ github.event.inputs.OP_IP || '10.10.10.1'}}
       #默认源码
       #CORE_URL: https://github.com/VIKINGYFY/immortalwrt
       CORE_URL: https://github.com/LiBwrt/openwrt-6.x
@@ -102,4 +102,4 @@ jobs:
       #feeds.conf.default  -- patch 目录 使用默认的：false
       CORE_feeds_conf: false
       CORE_META: openclash
-      OP_router: ${{ github.event.inputs.OP_router }}
+      OP_router: ${{ github.event.inputs.OP_router || '主路由'}}
